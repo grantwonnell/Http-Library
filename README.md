@@ -1,12 +1,14 @@
 # HTTP Library
 Lightweight HTTP library in C for client side only
 
-HTTP library in itself is 170 lines (I was proud of this) 
-Code is from a bigger project so its why theres utilties for some library functions 
-I tried to think through how to make the sockets non blocking or at least stop hangups but it seemed impossible because we return the response from the direct function 
-I also tried figuring how to not statically define the header length but was too lazy 
+# Info
 
-# USAGE
+* HTTP library in itself is 170 lines (I was proud of this) 
+* Code is from a bigger project so its why theres utilties for some library functions 
+* I tried to think through how to make the sockets non blocking or at least stop hangups but it seemed impossible because we return the response from the direct function 
+* I also tried figuring how to not statically define the header length but was too lazy 
+
+# Usage
 
     GET
     httpresponse_t *resp = HTTP(&(httpconfig_t){
