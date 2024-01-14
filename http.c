@@ -88,7 +88,7 @@ void HttpCleanupResp(httpresponse_t *resp) { /* Free all variables in any respon
 }
 
 
-char *HttpDowloadResponse(int rfd, size_t *bytes) { /* Outputs the clients response into an allocated buffer */
+static char *HttpDowloadResponse(int rfd, size_t *bytes) { /* Outputs the clients response into an allocated buffer */
 	*bytes = 0;
 
 	int ret;
