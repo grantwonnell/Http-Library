@@ -1,3 +1,4 @@
+/* DISCLAIMER - I know sprintf exists but this is from another project that doesnt use stdio.h at all */
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -13,7 +14,7 @@ char *UtilItoa(int value, int radix, char *string);
 char **UtilArr(char *Rdbuf, const char *Delim, size_t *Index);
 int FileWrite(const char *Path, const char *Rdbuf, size_t Len);
 
-static void HttpInitHeader(char *Request, const char *Method, const char *Path, const char *Version) {
+static void HttpInitHeader(char *Request, const char *Method, const char *Path, const char *Version) { /* Copies the header config to the request*/
     strcpy(Request, Method);
     strcat(Request, " /");
     strcat(Request, Path);
@@ -22,7 +23,7 @@ static void HttpInitHeader(char *Request, const char *Method, const char *Path, 
     strcat(Request, "\r\n");
 }
 
-static void HttpAddHeaders(char *Request, httpconfig_t *config) {
+static void HttpAddHeaders(char *Request, httpconfig_t *config) { /* Copies all of the headers */
     for(int i = 0; i < config->headers_len; i++) {
         strcat(Request, config->headers[i].name);
         strcat(Request, ": ");
@@ -31,13 +32,13 @@ static void HttpAddHeaders(char *Request, httpconfig_t *config) {
     }
 }
 
-static void AddPostLength(char *Request, httpconfig_t *config) {
+static void AddPostLength(char *Request, httpconfig_t *config) { /* just adds the content length for post data */
     strcat(Request, "Content-Length: ");
     UtilItoa(strlen(config->data), 10, Request + strlen(Request));
     strcat(Request, "\r\n");
 }
 
-static void HttpParseHeaders(char *Response, httpresponse_t *resp) {
+static void HttpParseHeaders(char *Response, httpresponse_t *resp) { /* Parses then copies the responses headers into the httpresponse_t structure */
     char *Begin = strdup(Response);
     char *End = strstr(Begin, "\r\n\r\n");
 
@@ -68,8 +69,8 @@ static void HttpParseHeaders(char *Response, httpresponse_t *resp) {
     free(args);
 }
 
-void HttpCleanupResp(httpresponse_t *resp) {
-    for(int i = 0; i < resp->headers_len; i++) {
+void HttpCleanupResp(httpresponse_t *resp) { /* Free all variables in any response */
+    for(int i = 0; i < resp->headers_len; i++) { /* Since we (c)alloced the httpresponse_t its by default 0 if no headers were found */
         free(resp->headers[i].name);
         free(resp->headers[i].val);
     }
@@ -87,7 +88,7 @@ void HttpCleanupResp(httpresponse_t *resp) {
 }
 
 
-char *HttpDowloadResponse(int rfd, size_t *bytes) {
+char *HttpDowloadResponse(int rfd, size_t *bytes) { /* Outputs the clients response into an allocated buffer */
 	*bytes = 0;
 
 	int ret;
@@ -103,17 +104,17 @@ char *HttpDowloadResponse(int rfd, size_t *bytes) {
 		*bytes += ret;
 
 		if(File == NULL)
-			File = calloc(1, *bytes + 1);
+			File = calloc(1, *bytes + 1); /* Have to add one on initial allocation for null terminator */
 		else
 			File = realloc(File, *bytes);
 
-		strcat(File, rdbuf);
+		strcat(File, rdbuf); /* append read buffer */
 	} while(ret > 0);
 
 	return File;
 }
 
-char *HttpParseFile(char *File) {
+static char *HttpParseFile(char *File) { /* idk why this is a function */
     return strstr(File, "\r\n\r\n") + 4;
 }
 
@@ -138,15 +139,15 @@ httpresponse_t *HTTP(httpconfig_t *config) {
     char *request = calloc(1, HEADER_SIZE);
 
     if(config->data != NULL)
-        request = realloc(request, HEADER_SIZE + strlen(config->data));
+        request = realloc(request, HEADER_SIZE + strlen(config->data)); /* need to re allocate space for POST data */
 
     HttpInitHeader(request, config->method, config->path, config->version);
     HttpAddHeaders(request, config);
 
-    if(!strcmp(config->method, "POST"))
+    if(config->data != NULL)
         AddPostLength(request, config);
 
-    strcat(request, "\r\n");
+    strcat(request, "\r\n"); /* add the newline to follow HTTP protocol */
 
     if(config->data != NULL)
         strcat(request, config->data);
@@ -167,7 +168,7 @@ httpresponse_t *HTTP(httpconfig_t *config) {
 
     memcpy(resp->code, response_header, header_len);
 
-    if(resp->bytes_read - resp->headers_len == 0) {
+    if(resp->bytes_read - resp->headers_len == 0) { /* means that there was no body */
         resp->body = NULL;
         free(request);
         return resp;
@@ -301,3 +302,4 @@ int main(void) {
         },
     });
 }
+
