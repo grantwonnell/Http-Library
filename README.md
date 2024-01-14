@@ -8,7 +8,7 @@ I also tried figuring how to not statically define the header length but was too
 
 # USAGE
 
-```httpresponse_t *resp = HTTP(&(httpconfig_t){
+httpresponse_t *resp = HTTP(&(httpconfig_t){
     .host = inet_addr("1.1.1.1"),
     .port = htons(80),
     
@@ -24,9 +24,9 @@ I also tried figuring how to not statically define the header length but was too
         {"User-Agent", "Wget"},
         {"Connection", "close"},
     },
-});```
+});
 
-```httpresponse_t *resp = HTTP(&(httpconfig_t){
+httpresponse_t *resp = HTTP(&(httpconfig_t){
     .host = inet_addr("1.1.1.1"),
     .port = htons(80),
     
@@ -43,4 +43,4 @@ I also tried figuring how to not statically define the header length but was too
         {"Connection", "close"},
         {"Conent-Type", "application/x-www-form-urlencoded"},
     },
-});```
+});
