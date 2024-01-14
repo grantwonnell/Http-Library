@@ -284,7 +284,7 @@ char *UtilItoa(int value, int radix, char *string)
 
 int main(void) {
     httpresponse_t *resp = HTTP(&(httpconfig_t){
-        .host = INET_ADDR(216,18,189,81),
+        .host = inet_addr("1.1.1.1"),
         .port = htons(80),
         
         .path = "index.html",
