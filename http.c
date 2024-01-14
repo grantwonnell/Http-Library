@@ -295,10 +295,9 @@ int main(void) {
 
         .headers_len = 3,
         .headers = {
-            {"Host", "216.18.189.81"},
+            {"Host", "1.1.1.1"},
             {"User-Agent", "Wget"},
             {"Connection", "close"},
         },
     });
 }
-
