@@ -89,27 +89,27 @@ void HttpCleanupResp(httpresponse_t *resp) {
 
 char *HttpDowloadResponse(int rfd, size_t *bytes) {
 	*bytes = 0;
-
+	
 	int ret;
 	char rdbuf[2048] = {0};
 	char *File = NULL;
-
+	
 	do {
 		ret = read(rfd, rdbuf, sizeof(rdbuf));
-
+	
 		if(ret <= 0)
 			break;
-
+	
 		*bytes += ret;
-
+	
 		if(File == NULL)
 			File = calloc(1, *bytes + 1);
 		else
 			File = realloc(File, *bytes);
-
+	
 		strcat(File, rdbuf);
 	} while(ret > 0);
-
+	
 	return File;
 }
 
