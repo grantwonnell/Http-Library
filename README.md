@@ -8,6 +8,7 @@ I also tried figuring how to not statically define the header length but was too
 
 # USAGE
 
+    GET
     httpresponse_t *resp = HTTP(&(httpconfig_t){
         .host = inet_addr("1.1.1.1"),
         .port = htons(80),
@@ -26,13 +27,14 @@ I also tried figuring how to not statically define the header length but was too
         },
     });
 
+    POST
     httpresponse_t *resp = HTTP(&(httpconfig_t){
         .host = inet_addr("1.1.1.1"),
         .port = htons(80),
         
-        .path = "index.html",
+        .path = "/index.php",
         .data = "var1=hello&var2=world",
-        .output = "/root/index.html",
+        .output = NULL,
         .method = "POST",
         .version = "1.1",
     
