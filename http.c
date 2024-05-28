@@ -123,7 +123,6 @@ httpresponse_t *HTTP(httpconfig_t *config) {
 
     int fd;
     if((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-        resp->ret = -1;
         return resp;
     }
     
@@ -133,42 +132,56 @@ httpresponse_t *HTTP(httpconfig_t *config) {
         .sin_family = AF_INET,
     };
 
-    if((resp->ret = connect(fd, (struct sockaddr *)&addr, sizeof(addr))) == -1)
+    if(connect(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1) {
+        free(resp);
         return resp;
+    }
     
     char *request = calloc(1, HEADER_SIZE);
 
     if(config->data != NULL)
-        request = realloc(request, HEADER_SIZE + strlen(config->data)); /* need to re allocate space for POST data */
+        request = realloc(request, HEADER_SIZE + util_strlen(config->data));
 
     HttpInitHeader(request, config->method, config->path, config->version);
     HttpAddHeaders(request, config);
 
-    if(config->data != NULL)
+    if(!util_strcmp(config->method, "POST"))
         AddPostLength(request, config);
 
-    strcat(request, "\r\n"); /* add the newline to follow HTTP protocol */
-
     if(config->data != NULL)
-        strcat(request, config->data);
+        util_strcat(request, config->data);
 
-    if((resp->ret = send(fd, request, strlen(request), 0)) == -1) {
+    util_strcat(request, "\r\n");
+
+    if(send(fd, request, util_strlen(request), 0) == -1) {
         free(request);
-        return NULL;
+        return resp;
+    }
+	
+    resp->response = FileReadFd(fd, &resp->bytes_read);
+
+    if(resp->bytes_read <= 0) {
+        free(request);
+        return resp;
     }
 
-    resp->response = HttpDowloadResponse(fd, &resp->bytes_read);
+    char *response_header = util_strstr(resp->response, " ") + 1;
 
-    char *response_header = strstr(resp->response, " ") + 1;
-
-    int header_len = UtilStrlenUntil(response_header, '\n') - 1;
+    int header_len = util_strlen_until(response_header, '\n') - 1;
     
     resp->code = calloc(1, header_len + 1);
-    resp->code_int = atoi(strstr(resp->code, " ") + 1);
 
-    memcpy(resp->code, response_header, header_len);
+    util_memcpy(resp->code, response_header, header_len);
 
-    if(resp->bytes_read - resp->headers_len == 0) { /* means that there was no body */
+    char *code_dupe = util_strdup(resp->code);
+    char *code_end = util_strstr(code_dupe, " ") + 1;
+    *code_end = 0;
+
+    resp->code_int = atoi(code_dupe);
+
+    free(code_dupe);
+
+    if(resp->bytes_read - resp->headers_len == 0) {
         resp->body = NULL;
         free(request);
         return resp;
@@ -179,7 +192,7 @@ httpresponse_t *HTTP(httpconfig_t *config) {
     HttpParseHeaders(resp->response, resp);
     
     if(config->output != NULL)
-        resp->ret = FileWrite(config->output, resp->body, resp->bytes_read - resp->headers_end);
+        FileWrite(config->output, resp->body, resp->bytes_read - resp->headers_end);
 
     free(request);
 
